@@ -40,8 +40,10 @@ body <- dashboardBody(
 				column(width = 7, 
 					box(title = "Add dataset to the repository", status = "primary", solidHeader = TRUE, width = 12,
 						h4("Name of dataset"),
+						p("Only numbers (except the first character), letters, and underscores are allowed."),
 						textInput(inputId = "uploadName", label = NULL, value = "", width = "250px"),
 						h4("Description"),
+						p("Optional short description of the dataset"),
 						textInput(inputId = "uploadDes", label = NULL, value = "", width = "400px"),
 						fileInput(inputId = "fileUpload", label = NULL, 
 							accept = c(

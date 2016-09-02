@@ -19,7 +19,7 @@ server <- function(input, output) {
 			repo_data$added[[input$uploadName]] <- list(
 				name = input$uploadName,
 				des = input$uploadDes,
-				create_counter = add_counter$time, 
+				counter = add_counter$time, 
 				dataset = dataset_file
 			)
 		}
@@ -53,11 +53,13 @@ server <- function(input, output) {
 				dataset_des <- searched_datasets()[[i]]$des
 				dataset_rows <- nrow(searched_datasets()[[i]]$dataset)
 				dataset_cols <- ncol(searched_datasets()[[i]]$dataset)
+				dataset_delete_id <- paste0("dataset_delete", searched_datasets()[[i]]$counter)
 
 				box(width = 12, status = "primary", solidHeader = TRUE, title = dataset_name, 
 					p(paste0("Description: ", dataset_des), style = "color:#000"), 
 					p(paste0("Number of rows: ", dataset_rows), style = "color:#000"),
-					p(paste0("Number of columns: ", dataset_cols), style = "color:#000")
+					p(paste0("Number of columns: ", dataset_cols), style = "color:#000"),
+					div(actionButton(inputId = dataset_delete_id, label = NULL, icon = icon("trash")), align = "right")
 				)
 			})
 		}
@@ -66,4 +68,6 @@ server <- function(input, output) {
 	observeEvent(input$emptyDataRepo, {
 		repo_data$added <- list()
 	})
+
+	
 } # end of server function
