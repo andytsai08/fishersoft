@@ -81,11 +81,19 @@ body <- dashboardBody(
 					), 
 					box(width = 12, background = "navy", title = "Dataset Repository", status = "primary", 
 						solidHeader = TRUE, style = "overflow-y:scroll; max-height:450px", 
-						uiOutput("dataRepo")
+						uiOutput("dataRepo_search")
 					), 
 					column(width = 12, 
 						div(actionButton("emptyDataRepo", "Empty repository"), align = "right")
 					)
+				)
+			)
+		), 
+		tabItem(tabName = "data", 
+			fluidRow(
+				column(width = 12, textOutput("testing")),
+				box(width = 12, title = "Dataset Repository", status = "primary", solidHeader = TRUE, 
+					uiOutput("dataRepo_details")
 				)
 			)
 		)

@@ -44,7 +44,7 @@ server <- function(input, output) {
 		}
 	})
 
-	output$dataRepo <- renderUI({
+	output$dataRepo_search <- renderUI({
 		if (is.character(searched_datasets())) {
 			return(searched_datasets())
 		} else {
@@ -53,13 +53,11 @@ server <- function(input, output) {
 				dataset_des <- searched_datasets()[[i]]$des
 				dataset_rows <- nrow(searched_datasets()[[i]]$dataset)
 				dataset_cols <- ncol(searched_datasets()[[i]]$dataset)
-				dataset_delete_id <- paste0("dataset_delete", searched_datasets()[[i]]$counter)
 
 				box(width = 12, status = "primary", solidHeader = TRUE, title = dataset_name, 
-					p(paste0("Description: ", dataset_des), style = "color:#000"), 
-					p(paste0("Number of rows: ", dataset_rows), style = "color:#000"),
-					p(paste0("Number of columns: ", dataset_cols), style = "color:#000"),
-					div(actionButton(inputId = dataset_delete_id, label = NULL, icon = icon("trash")), align = "right")
+					p(paste0("Description: ", dataset_des), style = "color: #000"), 
+					p(paste0("Number of rows: ", dataset_rows), style = "color: #000"),
+					p(paste0("Number of columns: ", dataset_cols), style = "color: #000")
 				)
 			})
 		}
@@ -68,6 +66,45 @@ server <- function(input, output) {
 	observeEvent(input$emptyDataRepo, {
 		repo_data$added <- list()
 	})
+	
+	output$testing <- renderText({
+		unlist(extract_ll(repo_data$added, "counter"))
+	})
 
+	output$dataRepo_details <- renderUI({
+		if (length(repo_data$added) == 0) {
+			h1("Repository is empty.", align = "center")
+		} else {
+			detail_boxes <- lapply(1:length(repo_data$added), function(i) {
+				title <- repo_data$added[[i]]$name
+				description <- h4(paste0("Description: ", repo_data$added[[i]]$des))
+				delete_id <- paste0("dataset_del", repo_data$added[[i]]$counter)
+
+				box(title = title, solidHeader = TRUE, status = "primary", collapsible = TRUE, 
+					width = 6, collapsed = TRUE, 
+					description, 
+					div(DT::renderDataTable(repo_data$added[[i]]$dataset), style = "padding: 10px; overflow-x: auto"), 
+					div(actionButton(delete_id, label = NULL, icon("trash-o")), align = "right")
+				)
+			})
+		}
+	})
+
+	observe({
+		if (length(repo_data$added) == 0) {
+			return(NULL)
+		}
+		delete_ids <- paste0("dataset_del", unlist(extract_ll(repo_data$added, "counter")))
+		delete_vals <- sapply(delete_ids, function(id) input[[id]])
+		if (any(sapply(delete_vals, is.null))) {
+			return(NULL)
+		}
+		if (all(delete_vals == 0)) {
+			return(NULL)
+		}
+		isolate({
+			repo_data$added[[which(delete_vals > 0)]] <- NULL
+		})
+	})
 	
 } # end of server function
