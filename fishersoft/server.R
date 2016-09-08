@@ -105,18 +105,140 @@ server <- function(input, output) {
 	observe({ # for deleting datasets from the repo
 		if (length(repo_data$added) == 0) { # do nothing when the storage list is empty
 			return(NULL)
+		} else {
+			delete_ids <- paste0("dataset_del", unlist(extract_ll(repo_data$added, "counter")))
+			delete_vals <- sapply(delete_ids, function(id) input[[id]]) # number of clicks for the trash buttons
+			if (any(sapply(delete_vals, is.null))) { # if any button is null
+				return(NULL) # then do nothing; this is to prevent bug when a button has just been set to NULL
+			} else if (all(delete_vals == 0)) { # if all buttons have not been clicked
+				return(NULL)
+			} else {
+				isolate({ # no dependency on delete_vals in the scope to avoid error
+					repo_data$added[[which(delete_vals > 0)]] <- NULL
+				})
+			}
 		}
-		delete_ids <- paste0("dataset_del", unlist(extract_ll(repo_data$added, "counter")))
-		delete_vals <- sapply(delete_ids, function(id) input[[id]]) # number of clicks for the trash buttons
-		if (any(sapply(delete_vals, is.null))) { # if any button is null
-			return(NULL) # then do nothing; this is to prevent bug when a button has just been set to NULL
-		}
-		if (all(delete_vals == 0)) { # if all buttons have not been clicked
-			return(NULL)
-		}
-		isolate({ # no dependency on delete_vals in the scope to avoid error
-			repo_data$added[[which(delete_vals > 0)]] <- NULL
-		})
 	})
 	
+
+	#################### Tab for data processing ######################################################################
+
+
+	########## UI for filtering datasets ##########
+	filter_container1 <- reactiveValues(ui = list()) # container for variable and condition
+	filter_container2 <- reactiveValues(ui = list()) # container for operator
+	filter_container3 <- reactiveValues(ui = list()) # container for value
+	filter_container4 <- reactiveValues(ui = list()) # container for remove button
+
+	output$filter_container1 <- renderUI({filter_container1$ui})
+	output$filter_container2 <- renderUI({filter_container2$ui})
+	output$filter_container3 <- renderUI({filter_container3$ui})
+	output$filter_container4 <- renderUI({filter_container4$ui})
+
+	########## UI output for data processing ##########
+	output$process_ui <- renderUI({
+		if (length(repo_data$added) == 0) {
+			box(width = 12, h1("Dataset repository is empty.", align = "center"))
+		} else if (input$process_input == "Filter a dataset") {
+
+			########## Filter a dataset ##########
+			box(width = 12, 
+				h4("Select a dataset to filter"),
+				selectInput(inputId = "filter_select", label = NULL, 
+					choices = unlist(extract_ll(repo_data$added, "name")), width = "220px"),
+				p(actionButton("filter_add", "Add filtering condition"), actionButton("filter_reset", "Reset")), 
+				br(),
+				fluidRow(
+					column(width = 4, uiOutput("filter_container1")), 
+					column(width = 3, uiOutput("filter_container2")),
+					column(width = 3, uiOutput("filter_container3")),
+					column(width = 1, uiOutput("filter_container4"))
+				), 
+				br(), 
+				br(),
+				br(),
+				fluidRow(column(width = 3, actionButton("filter_create", "Filter the dataset")))
+			)
+		}
+	})
+
+	########## Filter a dataset: the available variable names/types and the selected dataset ##########
+	filter_extract <- reactive({
+		if (length(repo_data$added) == 0) {
+			return(NULL)
+		} else {
+			select_index <- which(input$filter_select == unlist(extract_ll(repo_data$added, "name")))
+			select_item <- repo_data$added[[select_index]]
+			vars <- colnames(select_item$dataset)
+			var_types <- apply(select_item$dataset, 2, class)
+			unique_vals <- apply(select_item$dataset, 2, unique)
+			return(list(dataset = select_item$dataset, vars = vars, var_types = var_types, unique_vals = unique_vals))
+		}
+	})
+
+	########## Filter a dataset: observe clicking the add button and generate new UI elements ##########
+	observe({
+    	if (is.null(input$filter_add) || input$filter_add == 0) {
+    		return(NULL)
+    	} else {
+    		isolate({
+		      filter_container1$ui <- append(
+		        filter_container1$ui, 
+		        list(
+		          list(
+		            "variable" = div(my_selectInput("filter_var", input$filter_add, choices = filter_extract()$vars), 
+		                             style = "float:left; width:100%; height:60px; overflow-y:scroll"), 
+		            "condition" = div(radioButtons(inputId = paste0("filter_condition", input$filter_add), label = "", 
+		                                           choices = c("AND", "OR", "NONE"), inline = TRUE), 
+		                              style = "float:left; width:100%; height:60px")
+		            )
+		          )
+		        )
+		    })
+		    isolate({
+		      filter_container2$ui <- append(
+		        filter_container2$ui, 
+		        list(
+		          list(
+		            "operator" = div(my_selectInput("filter_operator", input$filter_add, 
+		                                            choices = c("=", "!=", ">", "<", ">=", "<="), 
+		                                            label = "Operator"), 
+		                             style = "float:left; height:60px; width:100%; overflow-y:scroll"), 
+		            br(), br(), br(), br(), br(), br()
+		            )
+		          )
+		        )
+		    })
+		    isolate({
+		      filter_container3$ui <- append(
+		        filter_container3$ui, 
+		        list(
+		          list(
+		            "value" = div(my_textInput("filter_value", input$filter_add), style = "float:left; width:100%"), 
+		            br(), br(), br(), br(), br(), br()
+		            )
+		          )
+		        )
+		    })
+		    isolate({
+		      filter_container4$ui <- append(
+		        filter_container4$ui, 
+		        list(
+		          list(
+		            "remove" = div(removeButton("filter_remove", input$filter_add, icon = icon("times"), width = "100%"), 
+		                           style = "float:left"), 
+		            br(), br(), br(), br(), br(), br()
+		            )
+		          )
+		        )
+		    })
+    	}
+  	})
+
+
+
+
+
+
+
 } # end of server function

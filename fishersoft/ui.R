@@ -65,9 +65,9 @@ body <- dashboardBody(
 						div(actionButton(inputId = "uploadAdd", label = "Add"), align = "right")
 					), 
 					box(width = 12, 
-						p("For sample datasets to upload, you can first download the sample file", 
+						p("For sample datasets to upload, you can first download the sample files", 
 							a(href = "sample1.csv", "sample1.csv"), # available for download when launched in browser
-							"or",
+							"and",
 							a(href = "sample2.csv", "sample2.csv"), # available for download when launched in browser
 							"and then upload them."
 						)
@@ -95,6 +95,21 @@ body <- dashboardBody(
 					uiOutput("dataRepo_details") # details/data tables for the uploaded datasets
 				)
 			)
+		), 
+		tabItem(tabName = "processing", # tab for data processing
+			fluidRow(
+				box(width = 12,
+					h4("Process to perform"), 
+					selectInput(inputId = "process_input", label = NULL, width = "220px", 
+						choices = c("Filter a dataset", "Merge datasets", 
+							"Create new variables", "Convert variable types", "Remove NA")), 
+					h4("Name of the new dataset"), 
+					textInput(inputId = "new_data_input", label = NULL, width = "220px"), 
+					h4("Description"), 
+					textInput(inputId = "new_datades_input", label = NULL, width = "500px")	
+				)
+			), 
+			fluidRow(width = 12, uiOutput("process_ui"))
 		)
 	)
 )
