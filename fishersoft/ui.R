@@ -35,7 +35,7 @@ sidebar <- dashboardSidebar(
 
 body <- dashboardBody(
 	tabItems(
-		tabItem(tabName = "upload", 
+		tabItem(tabName = "upload", # tab for uploading datasets
 			fluidRow(
 				column(width = 7, 
 					box(title = "Add dataset to the repository", status = "primary", solidHeader = TRUE, width = 12,
@@ -74,26 +74,25 @@ body <- dashboardBody(
 					)
 				), 
 				column(width = 5, 
-					box(width = 12, background = "blue", 
+					box(width = 12, background = "blue", # box for search input to find dataset in the repo
 						textInput(inputId = "searchDataRepo", label = "Search dataset repository", 
 							placeholder = "Dataset name or description"
 						)
 					), 
-					box(width = 12, background = "navy", title = "Dataset Repository", status = "primary", 
-						solidHeader = TRUE, style = "overflow-y:scroll; max-height:450px", 
-						uiOutput("dataRepo_search")
+					box(width = 12, background = "navy", title = "Dataset Repository", # display info about datasets
+						status = "primary", solidHeader = TRUE, style = "overflow-y:scroll; max-height:450px", 
+						uiOutput("dataRepo_search") # search results
 					), 
-					column(width = 12, 
+					column(width = 12, # button to empty the dataset repo
 						div(actionButton("emptyDataRepo", "Empty repository"), align = "right")
 					)
 				)
 			)
 		), 
-		tabItem(tabName = "data", 
+		tabItem(tabName = "data", # tab for the dataset repo
 			fluidRow(
-				column(width = 12, textOutput("testing")),
 				box(width = 12, title = "Dataset Repository", status = "primary", solidHeader = TRUE, 
-					uiOutput("dataRepo_details")
+					uiOutput("dataRepo_details") # details/data tables for the uploaded datasets
 				)
 			)
 		)
