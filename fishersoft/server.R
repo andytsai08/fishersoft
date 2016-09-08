@@ -187,10 +187,10 @@ server <- function(input, output) {
 		        list(
 		          list(
 		            "variable" = div(my_selectInput("filter_var", input$filter_add, choices = filter_extract()$vars), 
-		                             style = "float:left; width:100%; height:60px; overflow-y:scroll"), 
+		                             style = "float: left; width: 100%; height: 60px"), 
 		            "condition" = div(radioButtons(inputId = paste0("filter_condition", input$filter_add), label = "", 
 		                                           choices = c("AND", "OR", "NONE"), inline = TRUE), 
-		                              style = "float:left; width:100%; height:60px")
+		                              style = "float: left; width: 100%; height: 60px")
 		            )
 		          )
 		        )
@@ -203,7 +203,7 @@ server <- function(input, output) {
 		            "operator" = div(my_selectInput("filter_operator", input$filter_add, 
 		                                            choices = c("=", "!=", ">", "<", ">=", "<="), 
 		                                            label = "Operator"), 
-		                             style = "float:left; height:60px; width:100%; overflow-y:scroll"), 
+		                             style = "float: left; height: 60px; width: 100%"), 
 		            br(), br(), br(), br(), br(), br()
 		            )
 		          )
@@ -214,7 +214,7 @@ server <- function(input, output) {
 		        filter_container3$ui, 
 		        list(
 		          list(
-		            "value" = div(my_textInput("filter_value", input$filter_add), style = "float:left; width:100%"), 
+		            "value" = div(my_textInput("filter_value", input$filter_add), style = "float: left; width: 100%"), 
 		            br(), br(), br(), br(), br(), br()
 		            )
 		          )
@@ -226,7 +226,7 @@ server <- function(input, output) {
 		        list(
 		          list(
 		            "remove" = div(removeButton("filter_remove", input$filter_add, icon = icon("times"), width = "100%"), 
-		                           style = "float:left"), 
+		                           style = "float: left"), 
 		            br(), br(), br(), br(), br(), br()
 		            )
 		          )
@@ -234,11 +234,47 @@ server <- function(input, output) {
 		    })
     	}
   	})
+	
+	filter_ids <- reactive({
+		if (length(filter_container1$ui) == 0) {
+			return(NULL)
+		} else {
+			var_ids <- sapply(filter_container1$ui, function(ui_com) {
+				ui_com$variable$children[[1]]$children[[2]]$children[[1]]$attribs$id
+			})
+			ids <- gsub(pattern = "filter_var", replacement = "", x = var_ids)
+			return(ids)
+		}
+	})
 
+	########## Filter a dataset: observe deleting filter condition and resetting ##########
+	observe({
+		if (is.null(filter_ids())) {
+			return(NULL)
+		} else {
+			filter_remove_ids <- paste0("filter_remove", filter_ids())
+			filter_remove_vals <- sapply(filter_remove_ids, function(id) input[[id]])
+			if (any(sapply(filter_remove_vals, is.null))) {
+				return(NULL)
+			} else if (all(filter_remove_vals == 0)) {
+				return(NULL)
+			} else {
+				isolate({
+					filter_container1$ui[[which(filter_remove_vals > 0)]] <- NULL
+					filter_container2$ui[[which(filter_remove_vals > 0)]] <- NULL
+					filter_container3$ui[[which(filter_remove_vals > 0)]] <- NULL
+					filter_container4$ui[[which(filter_remove_vals > 0)]] <- NULL
+				})
+			}
+		}
+	})
 
-
-
-
+	observeEvent(input$filter_reset, {
+		filter_container1$ui <- NULL
+		filter_container2$ui <- NULL
+		filter_container3$ui <- NULL
+		filter_container4$ui <- NULL
+	})
 
 
 } # end of server function
